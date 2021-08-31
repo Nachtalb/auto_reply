@@ -208,16 +208,21 @@ Works the same as public replies but for private chats only.''',
 
     def auto_reply(self, is_public, user, line, room=''):
         possible_replies = self.public_replies if is_public else self.private_replies
-        replies = list(chain(*[outs for _in, outs in possible_replies.items()
+        replies = list(chain(*[zip([_in] * len(outs), outs) for _in, outs in possible_replies.items()
                                if (isinstance(_in, re.Pattern) and _in.search(line))
                                or (isinstance(_in, str) and _in.startswith('i/') and line.lower() == _in[2:].lower())
                                or (line == _in)]))
         if not replies:
             return
 
-        reply = choice(replies).format(self=self.config.sections['server']['login'],
-                                       sender=user,
-                                       room=room)
+        pattern, out = choice(replies)
+        if isinstance(pattern, re.Pattern) and (groups := pattern.search(line).groups()):  # type: ignore
+            for index, value in enumerate(groups, 1):
+                out = out.replace(f'${index}', value)
+
+        reply = out.format(self=self.config.sections['server']['login'],
+                           sender=user,
+                           room=room)
         if is_public:
             self.send_public(room, reply)
             self.log(f'Sent message "{reply}" to room #{room} as a reply to "{line}" from "{user}"')
