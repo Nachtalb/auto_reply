@@ -2,7 +2,7 @@ Auto Reply
 ==========
 
 A small plugin for `Nicotine+`_ to automatically respond to incoming
-messages.
+messages. It also supports regex matching and capture groups.
 
 Installation
 ------------

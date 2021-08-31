@@ -1,5 +1,5 @@
 Automatically send a message on an incoming one.
-By default it sends "test failed" as a response to "test"
+By default it sends "test failed" as a response to "test".
 
 ## Credit ##
 
