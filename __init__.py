@@ -149,15 +149,18 @@ class Plugin(BasePlugin):
     metasettings = {
         'public_replies': {
             'description': '''Public Replies
-Each line represents "incoming message=reply". Only applies to public chat rooms.
-You can use these placeholders: Senders name: {sender}, Own name: {self}, Room name: {room}
-Start the message with "i/" to make it case insensitive.
-/me command works others do not (limitation by the plugin system)
+Each line represents "flags/incoming message pattern=reply". Only applies to public chat rooms.
+- Placeholders: Senders name: {sender}, Own name: {self}, Room name: {room}
+- Flags: i: ignore case, r: parse as regex
+- Commands: only the "/me" commands can be used (limitation by the plugin system)
+- Comments start with #
+- If a line can't be parsed it will be logged to the console
 
 Example:
 i/test=test failed
 hey=Hello {user}
-uwu=UMU''',
+# this is a comment
+ir/(foo|bar)=FOOBAR WOHOO!!''',
             'type': 'textview',
         },
         'private_replies': {
@@ -179,7 +182,13 @@ Works the same as public replies but for private chats only.''',
             result = {}
 
             for line in filter(None, map(str.strip, text.split('\n'))):
-                _in, out = line.split('=', 1)
+                if line.startswith('#'):
+                    continue
+                try:
+                    _in, out = re.split('(?<!\\\\)=', line, 1)
+                except ValueError:
+                    self.log(f'No reply found in {line}')
+                    continue
                 ignore_case = _in.startswith(('i/', 'ri/', 'ir/'))
                 is_regex = _in.startswith(('r/', 'ir/', 'ri/'))
 
