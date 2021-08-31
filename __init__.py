@@ -1,7 +1,9 @@
 import ast
+from itertools import chain
 import json
 from pathlib import Path
 from random import choice
+import re
 from threading import Event, Thread
 from time import sleep, time
 from urllib import request
@@ -150,7 +152,7 @@ class Plugin(BasePlugin):
 Each line represents "incoming message=reply". Only applies to public chat rooms.
 You can use these placeholders: Senders name: {sender}, Own name: {self}, Room name: {room}
 Start the message with "i/" to make it case insensitive.
-Commands also work.
+/me command works others do not (limitation by the plugin system)
 
 Example:
 i/test=test failed
@@ -170,21 +172,37 @@ Works the same as public replies but for private chats only.''',
         self.parse_settings()
 
     def settings_changed(self, before, after, change):
-        super().settings_changed(before, after, change)
-        if 'replies' in after:
-            self.parse_settings()
+        self.parse_settings()
 
     def parse_settings(self):
-        self.private_replies = self.public_replies = {}
-        for incoming, outgoing in map(lambda l: l.split('=', 1), filter(None, map(str.strip, self.settings['public_replies'].split('\n')))):  # noqa
-            self.public_replies[incoming] = outgoing
-        for incoming, outgoing in map(lambda l: l.split('=', 1), filter(None, map(str.strip, self.settings['private_replies'].split('\n')))):  # noqa
-            self.private_replies[incoming] = outgoing
+        def _parse(text):
+            result = {}
+
+            for line in filter(None, map(str.strip, text.split('\n'))):
+                _in, out = line.split('=', 1)
+                ignore_case = _in.startswith(('i/', 'ri/', 'ir/'))
+                is_regex = _in.startswith(('r/', 'ir/', 'ri/'))
+
+                if is_regex:
+                    try:
+                        _in = re.compile(_in.split('/', 1)[1],
+                                         flags=re.IGNORECASE if ignore_case else 0)
+                    except Exception as e:
+                        self.log(f'Could not parse regex "{_in}": {e}')
+                        continue
+                result.setdefault(_in, [])
+                result[_in].append(out)
+            return result
+
+        self.public_replies = _parse(self.settings['public_replies'])
+        self.private_replies = _parse(self.settings['private_replies'])
 
     def auto_reply(self, is_public, user, line, room=''):
         possible_replies = self.public_replies if is_public else self.private_replies
-        replies = [out for _in, out in possible_replies.items()
-                   if (_in.startswith('i/') and line.lower().startswith(_in[2:])) or (line.startswith(_in))]
+        replies = list(chain(*[outs for _in, outs in possible_replies.items()
+                               if (isinstance(_in, re.Pattern) and _in.search(line))
+                               or (isinstance(_in, str) and _in.startswith('i/') and line.lower() == _in[2:].lower())
+                               or (line == _in)]))
         if not replies:
             return
 
