@@ -1,6 +1,7 @@
 import ast
 import json
 from pathlib import Path
+from random import choice
 from threading import Event, Thread
 from time import sleep, time
 from urllib import request
@@ -179,3 +180,26 @@ Works the same as public replies but for private chats only.''',
             self.public_replies[incoming] = outgoing
         for incoming, outgoing in map(lambda l: l.split('=', 1), filter(None, map(str.strip, self.settings['private_replies'].split('\n')))):  # noqa
             self.private_replies[incoming] = outgoing
+
+    def auto_reply(self, is_public, user, line, room=''):
+        possible_replies = self.public_replies if is_public else self.private_replies
+        replies = [out for _in, out in possible_replies.items()
+                   if (_in.startswith('i/') and line.lower().startswith(_in[2:])) or (line.startswith(_in))]
+        if not replies:
+            return
+
+        reply = choice(replies).format(self=self.config.sections['server']['login'],
+                                       sender=user,
+                                       room=room)
+        if is_public:
+            self.send_public(room, reply)
+            self.log(f'Sent message "{reply}" to room #{room} as a reply to "{line}" from "{user}"')
+        else:
+            self.send_private(user, reply)
+            self.log(f'Sent message "{reply}" to user "{user}" as a reply to "{line}"')
+
+    def incoming_public_chat_notification(self, room, user, line):
+        self.auto_reply(True, user, line, room)
+
+    def incoming_private_chat_notification(self, user, line):
+        self.auto_reply(False, user, line)
