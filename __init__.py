@@ -155,12 +155,13 @@ Each line represents "flags/incoming message pattern=reply". Only applies to pub
 - Commands: only the "/me" commands can be used (limitation by the plugin system)
 - Comments start with #
 - If a line can't be parsed it will be logged to the console
+- Supports regex capture groups. Use "$n" where n is 1 or higher.
 
 Example:
 i/test=test failed
 hey=Hello {user}
 # this is a comment
-ir/(foo|bar)=FOOBAR WOHOO!!''',
+ir/^(foo|bar)=I SAW "$1", WOHOO!!''',
             'type': 'textview',
         },
         'private_replies': {
