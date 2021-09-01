@@ -55,7 +55,7 @@ echo $new_version | read -d. -l major minor patch
 set -l dev_version $major.$minor.(math $patch + 1).dev0
 set -l dev_name "$new_name DEV"
 
-gen $dev_version $new_authors $dev_name $new_description $p_info[4..-1]
+gen $dev_version $new_authors $dev_name $new_description $p_info[5..-1]
 echo "Back to development $dev_version"
 
 git add PLUGININFO
