@@ -1,5 +1,5 @@
-Version="1.0.1.dev0"
+Version="1.0.1"
 Authors=['Nachtalb']
-Name="Auto Reply DEV"
+Name="Auto Reply"
 Description="Automatically send a message on an incoming one.\nBy default it sends \"test failed\" as a response to \"test\".\n\n## Credit ##\n\nAuthor: https://github.com/Nachtalb\nSource: https://github.com/Nachtalb/autoreply"
 Repository="Nachtalb/autoreply"
