@@ -81,7 +81,8 @@ Check for updates on start and periodically''',
     __name__ = CONFIG.get('Name')
     update_version = None
 
-    def init(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         settings = self.default_settings
         settings.update(self.settings)
         self.settings = settings
@@ -89,6 +90,7 @@ Check for updates on start and periodically''',
         metasettings.update(self.metasettings)
         self.metasettings = metasettings
 
+    def init(self):
         self.auto_update = PeriodicJob(name='AutoUpdate',
                                        delay=3600,
                                        update=self.check_update)
@@ -119,7 +121,11 @@ Check for updates on start and periodically''',
     def stop(self):
         self.auto_update.stop(False)
 
-    disable = shutdown_notification = stop
+    def shutdown_notification(self):
+        self.stop()
+
+    def disable(self):
+        self.stop()
 
     def detect_settings_change(self):
         if not hasattr(self, '_settings_before'):
