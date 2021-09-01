@@ -27,7 +27,7 @@ class PeriodicJob(Thread):
     _min_delay = 1
 
     def __init__(self, delay=None, update=None, name=None, before_start=None):
-        super().__init__(name=name or self.name)
+        super().__init__(name=name or self.name, daemon=True)
         self.delay = delay or self.delay
         self.before_start = before_start
         self.first_round = Event()
@@ -120,6 +120,7 @@ Check for updates on start and periodically''',
 
     def stop(self):
         self.auto_update.stop(False)
+        self.settings_watcher.stop(False)
 
     def shutdown_notification(self):
         self.stop()
