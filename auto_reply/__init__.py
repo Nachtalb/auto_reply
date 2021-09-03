@@ -39,7 +39,7 @@ Works the same as public replies but for private chats only.''',
         super().init()
         self.parse_settings()
 
-    def settings_changed(self, *_):
+    def settings_changed(self, **_):
         self.parse_settings()
 
     def parse_settings(self):
