@@ -1,0 +1,6 @@
+Version="1.0.0.dev0"
+Authors=['Nachtalb']
+Name="Auto Reply DEV"
+Description="Configurable automatic replies to incoming messages."
+Repository="Nachtalb/auto_reply"
+Prefix="dar"
