@@ -1,0 +1,25 @@
+name: zip-n-release
+on:
+  push:
+    tags:
+      - "v*.*.*"
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.GITHUB_REF }}
+          path: auto_reply
+      - name: zip
+        uses: thedoctor0/zip-release@master
+        with:
+          filename: 'auto_reply.zip'
+          path: 'auto_reply'
+          exclusions: 'auto_reply/*.git* auto_reply/.gitgub auto_reply/.gitignore auto_reply/.flake8 auto_reply/DESCRIPTION auto_reply/releaser'
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: 'auto_reply.zip'
+          draft: true
