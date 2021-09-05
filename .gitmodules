@@ -1,0 +1,3 @@
+[submodule "auto_reply/core"]
+	path = auto_reply/core
+	url = git@github.com:Nachtalb/np_plugin.core.git

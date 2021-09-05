@@ -2,7 +2,7 @@ from itertools import chain
 from random import choice
 import re
 
-from .base import BasePlugin
+from .core.base import BasePlugin
 
 
 class Plugin(BasePlugin):
